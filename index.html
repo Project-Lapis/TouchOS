@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Lapis</title> <!-- Ts used to say Lapis network lol -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #fff;
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        nav {
+            background: linear-gradient(to bottom, #444 0%, #222 100%);
+            height: 44px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #000;
+        }
+
+        .nav-content {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+        }
+
+        .nav-content a {
+            color: #d6d6d6;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: 300;
+        }
+
+        .nav-content a:hover { color: #fff; }
+
+        .logo-text { font-weight: 600 !important; color: #fff !important; }
+
+        .hero {
+            margin-top: 44px;
+            height: 700px;
+            background: radial-gradient(circle at center, #fff 0%, #e8e8e8 100%);
+            text-align: center;
+            padding-top: 60px;
+            border-bottom: 1px solid #d2d2d2;
+            overflow: hidden;
+        }
+
+        .hero h1 { font-size: 54px; font-weight: 600; letter-spacing: -1px; }
+        .hero h2 { font-size: 26px; font-weight: 300; margin-top: 5px; color: #555; }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 22px;
+            margin: 25px 10px 0;
+            border-radius: 20px;
+            font-size: 15px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid #1057af;
+            background: linear-gradient(to bottom, #7db9e8 0%, #207cca 49%, #2989d8 50%, #1e5799 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.2);
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            background: linear-gradient(to bottom, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
+            transform: translateY(1px);
+        }
+
+        .display-container {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .screen {
+            width: 680px;
+            height: 380px;
+            background: #111;
+            border: 12px solid #333;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .screen-reflection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(125deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .ground-reflection {
+            width: 680px;
+            height: 160px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent);
+            transform: scaleY(-1);
+            filter: blur(4px);
+            opacity: 0.3;
+            margin-top: 2px;
+            -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+        }
+
+        .features {
+            padding: 80px 0;
+            max-width: 980px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .feature-item h3 { font-size: 24px; font-weight: 500; margin-bottom: 10px; }
+        .feature-item p { font-size: 16px; line-height: 1.5; color: #666; font-weight: 300; }
+
+        footer {
+            background: #f2f2f2;
+            padding: 40px 0;
+            border-top: 1px solid #d2d2d2;
+        }
+
+        .footer-inner {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .footer-bottom {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #d2d2d2;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-content">
+        <a href="#" class="logo-text">Lapis Network</a>
+        <a href="#features">Features</a>
+        <a href="#download">Download</a>
+        <a href="https://github.com/Project-Lapis/TouchOS">GitHub</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <h1>TouchOS</h1>
+    <h2>The Operating System made to live on your Browser</h2>
+    <div class="cta-container">
+        <a href="#launch" class="btn">Launch OS</a>
+    </div>
+
+    <div class="display-container">
+        <div class="screen">
+            <div class="screen-content">
+                <img src="https://placehold.co/600x400/EEE/31343C" alt="TouchOS Preview">
+            </div>
+            <div class="screen-reflection"></div>
+        </div>
+        <div class="ground-reflection"></div>
+    </div>
+</section>
+
+<section class="features" id="features">
+    <div class="feature-item">
+        <h3>Run anywhere.</h3>
+        <p>TouchOS is a single HTML file. Open it in any browser and you have a full desktop environment with apps and games that bypass network filters, and blocker extensions.</p>
+    </div>
+    <div class="feature-item">
+        <h3>Leave no trace.</h3>
+        <p>As it is a HTML file, certain blockers like <b>LightSpeed</b> will not be able to see TouchOS</p>
+    </div>
+    <div class="feature-item">
+        <h3>Built for freedom.</h3>
+        <p>Specifically engineered by the Lapis Network team to provide students with a private space that school <b>SPYWARE</b> can't <i>easily</i> monitor.</p>
+    </div>
+    <div class="feature-item">
+        <h3>App Ecosystem.</h3>
+        <p>Includes built-in tools, browsers, tools, and games designed to work even on the most restrictive districts.</p>
+    </div>
+</section>
+
+<section id="download" style="text-align: center; padding: 100px 0; background: #fafafa; border-top: 1px solid #d2d2d2;">
+    <h2 style="font-size: 40px; font-weight: 500;">Get TouchOS.</h2>
+    <a href="https://github.com/Project-Lapis/TouchOS" class="btn" style="font-size: 18px; padding: 12px 30px;">Download .html</a>
+</section>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-bottom">
+            <p>Copyright © 2026 Lapis Network. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
