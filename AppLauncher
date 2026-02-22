@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #eef2f5; font-family: "Helvetica Neue", sans-serif; height: 100vh; display: flex; flex-direction: column; }
+.nav-bar {
+  height: 50px;
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  display: flex; align-items: center; justify-content: center;
+  position: sticky; top: 0; z-index: 5;
+}
+.nav-title { color: #000; font-weight: 600; font-size: 18px; }
+.content { padding: 20px; overflow-y: auto; padding-bottom: 100px; }
+.card {
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 20px;
+}
+label { display: block; font-weight: 600; color: #555; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+input, textarea {
+  width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px;
+  background: #fafafa; font-family: inherit; transition: 0.2s;
+}
+input:focus, textarea:focus { border-color: #007aff; outline: none; background: #fff; }
+textarea { height: 200px; font-family: "Menlo", monospace; font-size: 13px; }
+.btn-primary {
+  width: 100%; padding: 15px;
+  background: #007aff;
+  border: none; border-radius: 12px;
+  color: white; font-weight: 600; font-size: 17px;
+  cursor: pointer; 
+}
+.btn-primary:active { transform: scale(0.98); background: #0063ce; }
+.log { font-family: monospace; font-size: 12px; color: #555; padding-top: 10px; text-align: center; min-height: 20px;}
+</style></head><body>
+<div class="nav-bar"><div class="nav-title">App Store Connect</div></div>
+<div class="content">
+  <div class="card">
+    <label>Application Name</label>
+    <input type="text" id="app-name" placeholder="e.g. Calculator">
+  </div>
+  <div class="card">
+    <label>Source Code (HTML/JS)</label>
+    <textarea id="app-code" placeholder="<!DOCTYPE html>..."></textarea>
+  </div>
+  <button class="btn-primary" onclick="installApp()">Install to TouchOS</button>
+  <div class="log" id="log"></div>
+</div>
+<script>
+async function installApp() {
+  const name = document.getElementById('app-name').value.trim();
+  const code = document.getElementById('app-code').value.trim();
+  if(!name || !code) return;
+  
+  const logEl = document.getElementById('log');
+  logEl.innerHTML = 'Installing...';
+  try {
+    const filename = name.endsWith('.html') ? name : name + '.html';
+    await parent.XLine.fs.write('/apps/' + filename, code);
+    logEl.innerHTML = 'Installed ' + filename;
+    logEl.style.color = 'green';
+    setTimeout(() => { parent.XLine.goHome(); }, 1000);
+  } catch(e) {
+    logEl.innerHTML = 'Error: ' + e.message;
+    logEl.style.color = 'red';
+  }
+}
+<\/script></body></html>
