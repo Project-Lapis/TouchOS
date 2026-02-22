@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+* { margin: 0; padding: 0; user-select: none; }
+body { 
+  width: 100vw; height: 100vh; overflow: hidden; 
+  font-family: "Helvetica Neue", sans-serif;
+  background: radial-gradient(circle at center, #1b3a5e 0%, #050b14 100%);
+  display: flex; flex-direction: column;
+}
+.status-bar { 
+  height: 24px; 
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent); 
+  display: flex; align-items: center; justify-content: space-between; 
+  padding: 0 14px; color: #fff; font-size: 12px; font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  z-index: 100;
+}
+.grid-container {
+  flex: 1;
+  padding: 30px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(auto-fill, 100px);
+  gap: 15px 10px;
+  justify-items: center;
+  overflow-y: auto;
+  padding-bottom: 220px; 
+}
+.dock-shelf {
+  height: 95px;
+  width: 94%;
+  left: 3%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  position: absolute; 
+  bottom: 90px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+.dock-container {
+  height: 95px;
+  width: 100%;
+  position: absolute; 
+  bottom: 90px;
+  display: flex; justify-content: space-evenly; align-items: center;
+  z-index: 11;
+  padding: 0 10px;
+}
+.app { 
+  width: 70px; display: flex; flex-direction: column; align-items: center; cursor: pointer; 
+  transition: transform 0.1s;
+}
+.app:active { opacity: 0.7; transform: scale(0.9); }
+.app-icon { 
+  width: 60px; height: 60px; 
+  border-radius: 13px; 
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 28px; font-weight: bold;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+  overflow: hidden;
+  background-size: cover;
+}
+.app-icon::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0.1) 100%);
+  pointer-events: none;
+}
+.app-label { 
+  color: white; font-size: 11px; font-weight: 500; 
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+}
+</style></head><body>
+<div class="status-bar">
+  <div>TouchOS</div>
+  <div id="time">--:--</div>
+  <div id="battery">--% 🔋</div>
+</div>
+<div class="grid-container" id="grid"></div>
+<div class="dock-shelf"></div>
+<div class="dock-container" id="dock"></div>
+<script>
+setInterval(() => {
+  document.getElementById('time').textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}, 1000);
+
+const batteryEl = document.getElementById('battery');
+if (navigator.getBattery) {
+  navigator.getBattery().then(battery => {
+    function updateBattery() {
+      const pct = Math.round(battery.level * 100);
+      batteryEl.textContent = pct + '% 🔋';
+    }
+    updateBattery();
+    battery.addEventListener('levelchange', updateBattery);
+    battery.addEventListener('chargingchange', updateBattery);
+  });
+} else {
+  batteryEl.textContent = 'N/A 🔋';
+}
+
+function stringToColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  const h = Math.abs(hash) % 360;
+  return 'linear-gradient(135deg, hsl('+h+', 70%, 60%), hsl('+h+', 80%, 40%))';
+}
+
+async function loadLayout() {
+  const layout = await parent.XLine.fs.read('/system/.layout');
+  return layout ? JSON.parse(layout) : { dock: [], grid: [] };
+}
+
+async function saveLayout(layout) {
+  await parent.XLine.fs.write('/system/.layout', JSON.stringify(layout));
+}
+
+async function loadApps() {
+  const grid = document.getElementById('grid');
+  const dock = document.getElementById('dock');
+  grid.innerHTML = '';
+  dock.innerHTML = '';
+
+  const files = await parent.XLine.fs.list('/apps/');
+  const layout = await loadLayout();
+
+  files.forEach((path) => {
+    const name = path.split('/').pop().replace('.html', '');
+    const appEl = document.createElement('div');
+    appEl.className = 'app';
+    appEl.dataset.name = name;
+    appEl.onclick = () => parent.XLine.exec(path);
+
+    let bg = stringToColor(name);
+    let iconContent = name.charAt(0).toUpperCase();
+
+    if (name === 'installer') {
+      bg = 'linear-gradient(135deg, #333, #000)';
+      iconContent = '⚙️';
+    }
+
+    appEl.innerHTML = '<div class="app-icon" style="background:'+bg+'">' + iconContent + '</div><div class="app-label">' + name + '</div>';
+
+    if (layout.dock.includes(name)) {
+      dock.appendChild(appEl);
+    } else if (layout.grid.includes(name)) {
+      grid.appendChild(appEl);
+    } else {
+      if (name === 'installer') {
+        dock.appendChild(appEl);
+      } else {
+        grid.appendChild(appEl);
+      }
+    }
+
+    makeDraggable(appEl);
+  });
+}
+
+function makeDraggable(el) {
+  let isDragging = false;
+  let hasMoved = false;
+  let startX, startY, origX, origY;
+  let currentContainer = el.parentElement;
+
+  el.style.touchAction = 'none';
+
+  el.addEventListener('pointerdown', e => {
+    isDragging = true;
+    hasMoved = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = el.getBoundingClientRect();
+    origX = rect.left;
+    origY = rect.top;
+    el.setPointerCapture(e.pointerId);
+  });
+
+  el.addEventListener('pointermove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 10) {
+      hasMoved = true;
+      el.style.position = 'fixed';
+      el.style.zIndex = 99999;
+      el.style.left = origX + dx + 'px';
+      el.style.top = origY + dy + 'px';
+    }
+  });
+
+  el.addEventListener('pointerup', async e => {
+    if (!isDragging) return;
+    isDragging = false;
+    el.releasePointerCapture(e.pointerId);
+
+    if (!hasMoved) {
+      return;
+    }
+
+    const dock = document.getElementById('dock');
+    const grid = document.getElementById('grid');
+    const dockRect = dock.getBoundingClientRect();
+    const gridRect = grid.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    if (isOverlapping(elRect, dockRect) && currentContainer !== dock) {
+      dock.appendChild(el);
+      currentContainer = dock;
+    } else if (isOverlapping(elRect, gridRect) && currentContainer !== grid) {
+      grid.appendChild(el);
+      currentContainer = grid;
+    }
+
+    el.style.position = 'relative';
+    el.style.left = '';
+    el.style.top = '';
+    el.style.zIndex = '';
+
+    const layout = {
+      dock: Array.from(dock.children).map(a => a.dataset.name),
+      grid: Array.from(grid.children).map(a => a.dataset.name)
+    };
+    await saveLayout(layout);
+  });
+}
+
+function isOverlapping(rect1, rect2) {
+  return !(rect1.right < rect2.left || 
+           rect1.left > rect2.right || 
+           rect1.bottom < rect2.top || 
+           rect1.top > rect2.bottom);
+}
+
+loadApps();
+<\/script></body></html>
